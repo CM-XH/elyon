@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { HashRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppData } from './types';
 import { INITIAL_DATA } from './constants';
 import Navbar from './components/Navbar';
@@ -31,14 +30,22 @@ export const useApp = () => {
   return context;
 };
 
+// Helper to scroll to top on page change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
+
 const App: React.FC = () => {
   const [data, setData] = useState<AppData>(INITIAL_DATA);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load from LocalStorage on mount
   useEffect(() => {
-    setIsLoading(true);
+    // Attempt to load saved content from LocalStorage
     const saved = localStorage.getItem('elyon_school_data');
     if (saved) {
       try {
@@ -47,14 +54,15 @@ const App: React.FC = () => {
         console.error("Failed to parse local data", e);
       }
     }
-    // Branding splash screen delay
-    const timer = setTimeout(() => setIsLoading(false), 1000);
+    
+    // Simulate initial loading/branding delay
+    const timer = setTimeout(() => setIsLoading(false), 1200);
     return () => clearTimeout(timer);
   }, []);
 
   if (isLoading) {
     return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-white">
+      <div className="h-screen w-screen flex flex-col items-center justify-center bg-white transition-opacity duration-500">
         <div className="relative w-24 h-24 mb-8">
            <div className="absolute inset-0 border-4 border-school-green/20 rounded-full"></div>
            <div className="absolute inset-0 border-4 border-school-green border-t-transparent rounded-full animate-spin"></div>
@@ -62,12 +70,12 @@ const App: React.FC = () => {
              {data.content.general.schoolName.charAt(0)}
            </div>
         </div>
-        <h2 className="text-xl font-bold text-school-green animate-pulse tracking-widest uppercase">{data.content.general.schoolName}</h2>
-        <div className="flex gap-1 mt-3">
-          <div className="w-1.5 h-1.5 rounded-full bg-school-brown animate-bounce [animation-delay:-0.3s]"></div>
-          <div className="w-1.5 h-1.5 rounded-full bg-school-brown animate-bounce [animation-delay:-0.15s]"></div>
-          <div className="w-1.5 h-1.5 rounded-full bg-school-brown animate-bounce"></div>
-        </div>
+        <h2 className="text-xl font-bold text-school-green animate-pulse tracking-widest uppercase">
+          {data.content.general.schoolName}
+        </h2>
+        <p className="text-[10px] text-school-brown font-bold tracking-[0.3em] uppercase mt-2">
+          {data.content.general.schoolTagline}
+        </p>
       </div>
     );
   }
@@ -80,7 +88,6 @@ const App: React.FC = () => {
           <Navbar />
           <main className="flex-grow">
             <Routes>
-              {/* Public Website Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/academics" element={<Academics />} />
@@ -88,15 +95,11 @@ const App: React.FC = () => {
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/news" element={<News />} />
               <Route path="/contact" element={<Contact />} />
-              
-              {/* Staff Access Routes */}
               <Route path="/admin/login" element={<Login />} />
               <Route 
                 path="/admin" 
-                element={isAdmin ? <AdminDashboard /> : <Navigate to="/" replace />} 
+                element={isAdmin ? <AdminDashboard /> : <Navigate to="/admin/login" replace />} 
               />
-              
-              {/* Security Redirect: Any other route goes to Home */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
@@ -105,14 +108,6 @@ const App: React.FC = () => {
       </Router>
     </AppContext.Provider>
   );
-};
-
-const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
-  return null;
 };
 
 export default App;

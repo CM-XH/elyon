@@ -1,0 +1,7 @@
+{
+  "name": "Elyon Kindergarten and Primary School",
+  "description": "A modern, professional school website with an integrated CMS admin panel for managing academic content, news, and galleries.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
